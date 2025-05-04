@@ -1,6 +1,10 @@
 CC=gcc
 opt=-O2
 
+.PHONY: all clean
+
+all: repl bible find bb
+
 repl: sutra-6.c repl.c
 	$(CC) $(opt) repl.c -o repl
 
