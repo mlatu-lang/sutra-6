@@ -4,7 +4,7 @@
 #define R return
 #define PF printf
 #define P(c,...) if (c) R __VA_ARGS__
-#define DO(n,x) do { int _n=n; for (I i=0;i<_n;i++) { x; } } while(0)
+#define DO(n,x) do { long long _n=n; for (long long i=0;i<_n;i++) { x; } } while(0)
 typedef int I; typedef void V; typedef char*S;
 
 typedef struct a { I u; struct a *n, *a; } *A; // arena - used, next, current arena
@@ -41,7 +41,8 @@ I chr(char c,M s,M p,I*ip,I*l,A a) { switch (c) {
 	PRM('>', Q1, M m=nM(ARR,a); m->l=1; m->a=ma(sizeof(M),a); *m->a=TOS; TOS=m);
 	PRM('~', Q2, M y=POP; M x=POP; PUSH(y); PUSH(x));
 	PRM(',', Q2, M y=POP; M x=TOS; P(!y->l, 1); P(!x->l, TOS=y, 1); M m=nM(CAT,a); m->x=x; m->y=y; m->l=x->l+y->l; TOS=m);
-	PRM('<', Q1, M m=POP; *ip=FIX(*ip-m->l); uw(m,p,FIX(*ip+1)); p->l+=m->l);
+	// catting to an empty quote is the other quote. thus, if a cat has length 0 (and ofc if <0), the length has overflowed
+	PRM('<', Q1, M m=POP; P(m->t==CAT&&m->l<=0, p->l+=1+LIM, 1); P(m->l>LIM, 1); *ip=FIX(*ip-m->l); uw(m,p,FIX(*ip+1)); p->l+=m->l);
 	default: R 0; } }
 I ex1(M s,M p,I*ip,I*l,A a) { P(!p->l,1); M m=p->a[*ip]; if (m->t!=CHR||!chr(m->c,s,p,ip,l,a)) PUSH(m);
 	P(p->l+s->l>LIM,*l=-1); p->l--; *ip=FIX(*ip+1); R !p->l; }
