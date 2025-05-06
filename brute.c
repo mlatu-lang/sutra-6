@@ -15,8 +15,8 @@ S reds[]={
 	")<", // == unwrapped contents of quote
 
 	"(),", // ==
-	"~--", // == --
 	"+>~", // == >+<
+	"~--", // == --
 	">~-", // == ~->
 	 0 };
 I red(I l,S s) { I z=l; for (S*r=reds; *r; r++) { I n=(strstr(s,*r)-s)+strlen(*r)-1; (n>=0)&&(n<z)&&(z=n); } R z; }

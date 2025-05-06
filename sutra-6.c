@@ -7,12 +7,13 @@
 #define DO(n,x) do { long long _n=n; for (long long i=0;i<_n;i++) { x; } } while(0)
 typedef int I; typedef void V; typedef char*S;
 
-typedef struct a { I u; struct a *n, *a; } *A; // arena - used, next, current arena
+typedef struct a { I u; struct a *n, *a; } *A; I SZA=sizeof(struct a); // arena - used, next, current arena
 #define LIM 1000 // max # of iterations before giving up, also max stack size before giving up
-#define AS 4096*8 // arena size
-A nA() { A a=calloc(1,AS); a->a=a; a->u=sizeof(struct a); R a; }
-V*ma(I l,A m) { A a=m->a; if (l>AS-a->u) a=m->a=a->n=nA(); V*p=(char*)a+a->u; a->u+=l; R p; }
-V fr(A a) { while (a) { A n=a->n; free(a); a=n; } }
+#define AS 2048 // arena size
+A nA() { A a=malloc(AS); a->a=a; a->u=0; a->n=0; R a; }
+V*ma(I l,A m) { A a=m->a; if (l>AS-a->u-SZA) { if (!a->n) a->n=nA(); a=m->a=a->n; a->u=0; } V*p=(char*)a+a->u+SZA; a->u+=l; R p; }
+V rc(A a) { a->u=0; a->a=a; } // free memory to allocator (reclaim)
+V fr(A a) { while (a) { A n=a->n; free(a); a=n; } } // free memory to os
 
 // mlatu term - type, length. if CHR, c is the character. if ARR, a is the array. if CAT, x/y are the halves.
 enum T { CHR,ARR,CAT }; typedef struct m { enum T t; I l; char c; struct m **a, *x, *y; } *M;
@@ -47,5 +48,5 @@ I chr(char c,M s,M p,I*ip,I*l,A a) { switch (c) {
 I ex1(M s,M p,I*ip,I*l,A a) { P(!p->l,1); M m=p->a[*ip]; if (m->t!=CHR||!chr(m->c,s,p,ip,l,a)) PUSH(m);
 	P(p->l+s->l>LIM,*l=-1); p->l--; *ip=FIX(*ip+1); R !p->l; }
 M pa[LIM], sa[LIM];
-M ex(M p,I*l,A a) { M*oa=p->a; p->a=pa; DO(p->l, p->a[i]=oa[i]); M s=nM(ARR,a); s->a=sa; // l is # of rewrites or -1 if gave up
+M ex(M p,I*l,A a) { M*oa=p->a; p->a=pa; DO(p->l, p->a[i]=oa[i]); M s=nM(ARR,a); s->l=0; s->a=sa; // l: # of rewrites / -1 if gave up
 	I ip=*l=0; while (*l<LIM) P(ex1(s,p,&ip,l,a), s); *l=-1; R s; }
