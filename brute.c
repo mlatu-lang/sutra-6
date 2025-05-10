@@ -1,5 +1,5 @@
 // helpers for brute forcing programs
-S cs="()+-<>~,";
+S cs="+-<>~,()";
 long long ipow(I b,I p) { long long r=1; DO(p, r*=b); R r; }
 I up(I l,S s) { I p=0; DO(l, p+=(s[i]=='(')-(s[i]==')'); P(p<0,i)); R -1; } // skip invalid parens
 #define prog(i,o) long long _j=i; DO(l, s[l-i-1+o]=cs[_j%8];_j/=8); I u=up(l,s+o); if (u>=0) { i+=ipow(8,l-u-1)-1; continue; }
