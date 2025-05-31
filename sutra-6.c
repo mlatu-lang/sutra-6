@@ -4,8 +4,8 @@
 #define R return
 #define PF printf
 #define P(c,...) if (c) R __VA_ARGS__
-#define DO(n,x) do { long long _n=n; for (long long i=0;i<_n;i++) { x; } } while(0)
-typedef int I; typedef void V; typedef char*S;
+#define DO(n,x) do { LL _n=n; for (LL i=0;i<_n;i++) { x; } } while(0)
+typedef int I; typedef long long LL; typedef void V; typedef char*S;
 
 typedef struct a { I u; struct a *n, *a; } *A; I SZA=sizeof(struct a); // arena - used, next, current arena
 #define LIM 1000 // max # of iterations before giving up, also max stack size before giving up
