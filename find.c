@@ -4,12 +4,12 @@
 #include "brute.c"
 
 char req[99], fnd[99]; I reql; V greq(S s) { for (;*s;s++) *s!='('&&*s!=')'&&(*strchrnul(req,*s)=*s); reql=strlen(req); }
-I trv(M r,I l) { P(r->t==CHR, !l&&strchr("+-<>,~",r->c)?1:(fnd[strchrnul(req,r->c)-req]=1,0));
-	P(r->t==CAT, trv(r->x,1)||trv(r->y,1)); DO(r->l, P(trv(r->a[i],1), 1)); R 0; }
-I imp(M r) { P(r->l&&r->a[r->l-1]->t==CHR, 1); memset(fnd,0,reql); DO(r->l, P(trv(r->a[i],0), 1)); DO(reql, P(fnd[i]!=1, 1)); R 0; }
+I trv(M r,I l) { P(r->c, !l&&strchr("+-<>,~",r->c)?1:(fnd[strchrnul(req,r->c)-req]=1,0));
+	P(r->x, trv(r->x,1)||trv(r->y,1)); DO(r->l, P(trv(r->a[i],1), 1)); R 0; }
+I imp(M r) { P(r->l&&r->a[r->l-1]->c, 1); memset(fnd,0,reql); DO(r->l, P(trv(r->a[i],0), 1)); DO(reql, P(fnd[i]!=1, 1)); R 0; }
 I simp(S s,I pl,I l,M r,A a,I c) { while (l&&(!r||c<0||imp(r))) { s[pl+--l]=0; rc(a); r=ps(s,0,a); r&&(r=ex(r,&c,a)); } R l; }
-I teq(M t,M r,I*o) { P(t->t==CHR, r->t==CHR&&t->c==r->c); P(!o&&t->l!=r->l, 0); I f=0,*no=o?o:&f;
-	P(r->t==CAT, teq(t,r->x,no)&&teq(t,r->y,no)); DO(r->l, P(!teq(t->a[o?(*o)++:i],r->a[i],0), 0)); R 1; }
+I teq(M t,M r,I*o) { P(t->c, r->c&&t->c==r->c); P(!o&&t->l!=r->l, 0); I f=0,*no=o?o:&f;
+	P(r->x, teq(t,r->x,no)&&teq(t,r->y,no)); DO(r->l, P(!teq(t->a[o?(*o)++:i],r->a[i],0), 0)); R 1; }
 I oflen(I l,S ls,M rs) { PF("length %d:\n",l); I pl=strlen(ls); S s=calloc(1,l+pl+1); strcpy(s,ls); M r; A a=nA(); I c, f=0;
 	DO(ipow(8,l), prog(i,pl); SRED(pl); if (i%1000001==0) puts(s);
 		if ((r=ps(s,0,a))&&(r=ex(r,&c,a),c>=0)&&teq(rs,r,0)&&PF("%s |-> ",s)&&pr(r,0)&&puts("")) { f=1; break; }
