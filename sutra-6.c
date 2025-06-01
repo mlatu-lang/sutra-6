@@ -19,7 +19,7 @@ V fr(A a) { while (a) { A n=a->n; free(a); a=n; } } // free memory to os
 typedef struct m { I l; char c; struct m **a, *x, *y; } *M;
 M nM(A a) { M m=ma(sizeof(struct m),a); m->l=0; m->c=0; m->x=m->y=0; m->a=0; R m; } M nMC(char c,A a) { M m=nM(a); m->c=c; R m; }
 I pr(M m,I p) { P(!m, 0); if (m->c) PF("%c",m->c); // print
-	else { p&&PF("("); if (m->a) DO(m->l, pr(m->a[i],1)); else pr(m->x,0), pr(m->y,0); p&&PF(")"); }; }
+	else { p&&PF("("); if (m->a) DO(m->l, pr(m->a[i],1)); else if (m->x) pr(m->x,0), pr(m->y,0); p&&PF(")"); } }
 
 S sp(S s) { I p=0; for (;*s;s++) { p+=(*s=='(')-(*s==')'); P(!p, s); } R s; } // skip to closing paren
 I len(S s) { I l=0; for (;*s;s++) { P(*s==')', l); l++; P(!*(s=sp(s)), l); } R l; }
@@ -45,6 +45,6 @@ I chr(char c,M s,M p,I*ip,I*l,A a) { switch (c) { // 1 = rewrite, 0 = no rewrite
 	R 0; }
 I ex1(M s,M p,I*ip,I*l,A a) { P(!p->l,1); M m=p->a[*ip]; I r=0; if (!m->c||!(r=chr(m->c,s,p,ip,l,a))) PUSH(m);
 	P(r<0||p->l+s->l>LIM,*l=-1); *ip=FIX(*ip+1); R !(--p->l); }
-M pa[LIM], sa[LIM];
-M ex(M p,I*l,A a) { M*oa=p->a; p->a=pa; DO(p->l, p->a[i]=oa[i]); M s=nM(a); s->a=sa; // l: # of rewrites / -1 if gave up
-	I ip=*l=0; while (*l<LIM) P(ex1(s,p,&ip,l,a), s); *l=-1; R s; }
+M exb(M p,I*l,A a,M*pa,M*sa) { M*oa=p->a; p->a=pa; DO(p->l, p->a[i]=oa[i]); // execute with custom program and stack buffers
+	M s=nM(a); s->a=sa; I ip=*l=0; while (*l<LIM) P(ex1(s,p,&ip,l,a), s); *l=-1; R s; }
+M pa[LIM], sa[LIM]; M ex(M p,I*l,A a) { R exb(p,l,a,pa,sa); } // l: # of rewrites / -1 if gave up
