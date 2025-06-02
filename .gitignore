@@ -2,3 +2,5 @@ repl
 bible
 find
 bb
+findwasm-src/a.out.js
+findwasm-src/a.out.wasm

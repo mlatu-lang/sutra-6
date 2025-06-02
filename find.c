@@ -4,6 +4,7 @@
 #include "sutra-6.c"
 #include "brute.c"
 
+S strchrnul(const char *s,int c) { S f=strchr(s,c); R !f?s+strlen(s)+1:f; }
 char req[99]; I reql; V greq(S s) { for (;*s;s++) *s!='('&&*s!=')'&&(*strchrnul(req,*s)=*s); reql=strlen(req); }
 I trv(M r,I l,S fnd) { P(r->c, !l&&strchr("+-<>,~",r->c)?1:(fnd[strchrnul(req,r->c)-req]=1,0));
 	P(r->x, trv(r->x,1,fnd)||trv(r->y,1,fnd)); DO(r->l, P(trv(r->a[i],1,fnd), 1)); R 0; }
@@ -14,7 +15,7 @@ I simp(S s,I l,M r,A a,I c,M*pa,M*sa) { char fnd[99];
 	while (l&&(!r||c<0||imp(r,fnd))) { s[pl+--l]=0; rc(a); r=ps(s,0,a); r&&(r=exb(r,&c,a,pa,sa)); } R l; }
 I teq(M t,M r,I*o) { P(t->c, r->c&&t->c==r->c); P(!o&&t->l!=r->l, 0); I f=0,*no=o?o:&f;
 	P(r->x, teq(t,r->x,no)&&teq(t,r->y,no)); DO(r->l, P(!teq(t->a[o?(*o)++:i],r->a[i],0), 0)); R 1; }
-#define THREADN 100
+#define THREADN 4
 I work(V*ag) { LL*se=(LL*)ag; S s=calloc(1,l+pl+1); strcpy(s,ls); M r; A a=nA(); I c; M pa[LIM], sa[LIM];
 	for (LL i=*se; i<se[1]; i++) { if (f) break; prog(i,pl); SRED(pl); if (i%1000001==0) puts(s);
 		if ((r=ps(s,0,a))&&(r=exb(r,&c,a,pa,sa),c>=0)&&teq(rs,r,0)) { PF("%s |-> ",s); pr(r,0); puts(""); f=1; break; }
@@ -27,6 +28,9 @@ I oflen(I len) { PF("length %d:\n",l=len); LL tot=ipow(csl,l), sp=tot/THREADN; !
 S help="usage: ./find <before> <after> <characters>?\n"
 	"examples: ./find '(B)(A)' '(B)(B)A'           # full search \n"
 	"          ./find '(B)(A)' '(B)(B)A' '+-<>,~'  # search paren-less";
-I main(I argc,S argv[]) { P(argc!=3&&argc!=4,puts(help)); argc==4&&(csl=strlen(cs=argv[3]));
-	pl=strlen(ls=argv[1]); A a=nA(); rs=ps(ls,0,a); P(!rs, fr(a), puts("doesn't parse"));
-	greq(argv[2]); rs=ps(argv[2],0,a); P(!rs, fr(a), puts("doesn't parse")); DO(99, P(oflen(i), fr(a), 0)); fr(a); }
+I find(V*as) { S*args=(S*)as; S ls_=*args, rs_=args[1], cs_=args[2];
+	csl=strlen(cs=cs_); pl=strlen(ls=ls_); A a=nA(); rs=ps(ls,0,a); P(!rs, fr(a), puts("doesn't parse"));
+	greq(rs_); rs=ps(rs_,0,a); P(!rs, fr(a), puts("doesn't parse")); f=0; DO(99, P(oflen(i), fr(a), 0)); fr(a); R 0; }
+S bruh(S i) { S o=malloc(strlen(i)+1); strcpy(o,i); R o; }
+I findt(S ls_,S rs_,S cs_) { S a[3]; *a=bruh(ls_); a[1]=bruh(rs_); a[2]=bruh(cs_); thrd_t t; thrd_create(&t,find,a); thrd_detach(t); }
+I main(I argc,S argv[]) { P(argc!=3&&argc!=4,puts(help)); S a[3]; *a=argv[1]; a[1]=argv[2]; a[2]=argc==4?argv[3]:cs; R find(a); } 

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>sutra-6 find</title>
+		<script src="enable-threads.js"></script>
+		<script src="./a.out.js"></script>
+		<style>
+body     { display:flex; flex-direction:column; align-items:center;
+           font-size:1rem; margin:min(10vw,100px) auto; }
+pre      { max-width:min(80ch,80vw); margin:auto; white-space:pre-wrap; }
+		  </style>
+	</head>
+	<body>
+		<input id="ls" value="(B)(A)"></input>
+		<input id="rs" value="(B)A(B)"></input>
+		<input id="cs" value="+-<>~,()"></input>
+		<button id="go">go</button>
+		<div id="o"></div>
+		<script>
+const G = id => document.getElementById(id);
+var find = (ls, rs, cs) => {
+	const str2C = s => {
+		const size = lengthBytesUTF8(s) + 1;
+		const ret = _malloc(size);
+		stringToUTF8(s, ret, size);
+		return ret;
+	}
+
+	G("o").innerHTML = "";
+
+	const args = new Uint32Array([ls, rs, cs].map(str2C));
+	Module.ccall("findt", "number", ["number", "number", "number"], args);
+
+	args.forEach(x => _free(x));
+}
+G("go").onclick = () => find(G("ls").value, G("rs").value, G("cs").value);
+		</script>
+	</body>
+</html>
