@@ -5,17 +5,20 @@
 		<script src="enable-threads.js"></script>
 		<script src="./a.out.js"></script>
 		<style>
-body     { display:flex; flex-direction:column; align-items:center;
-           font-size:1rem; margin:min(10vw,100px) auto; }
-pre      { max-width:min(80ch,80vw); margin:auto; white-space:pre-wrap; }
+body { display:flex; flex-direction:column; align-items:center;
+       font-size:1rem; margin:min(10vw,100px) auto; }
+pre { max-width:min(80ch,80vw); margin:auto; white-space:pre-wrap; }
+#wr { height:50vh; overflow:auto; display:flex; flex-direction:column-reverse; }
+#o  { width:50vw; }
+.lb { display:flex; flex-direction:row; }
 		  </style>
 	</head>
 	<body>
-		<input id="ls" value="(B)(A)"></input>
-		<input id="rs" value="(B)A(B)"></input>
-		<input id="cs" value="+-<>~,()"></input>
+		<div class="lb"><pre>left hand side  </pre> <input id="ls" value="(B)(A)"></input></div>
+		<div class="lb"><pre>right hand side </pre> <input id="rs" value="(B)A(B)"></input></div>
+		<div class="lb"><pre>     characters </pre> <input id="cs" value="+-<>~,()"></input></div>
 		<button id="go">go</button>
-		<div id="o"></div>
+		<pre><div id="wr" ><div id="o"></div></div></pre>
 		<script>
 const G = id => document.getElementById(id);
 var find = (ls, rs, cs) => {
@@ -28,8 +31,8 @@ var find = (ls, rs, cs) => {
 
 	G("o").innerHTML = "";
 
-	const args = new Uint32Array([ls, rs, cs].map(str2C));
-	Module.ccall("findt", "number", ["number", "number", "number"], args);
+	const args = [ls, rs, cs].map(str2C);
+	Module.ccall("find", "number", ["number", "number", "number", "number"], [...args, 1]);
 
 	args.forEach(x => _free(x));
 }
