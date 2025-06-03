@@ -25,7 +25,7 @@ S sp(S s) { I p=0; for (;*s;s++) { p+=(*s=='(')-(*s==')'); P(!p, s); } R s; } //
 I len(S s) { I l=0; for (;*s;s++) { P(*s==')', l); l++; P(!*(s=sp(s)), l); } R l; }
 M ps(S s,I p,A a); M pq(S s,I p,A a) { M z=ps(s+1,p+1,a); P(!z||!*sp(s), 0); R z; } // parse, parse quote
 M ps(S s,I p,A a) { M m=nM(a); m->l=len(s); m->a=ma(m->l*sizeof(M),a); // returns null on unmatched parens
-	DO(m->l, P(*s==')', p?m:0); P(!(m->a[i]=*s=='('?pq(s,p,a):nMC(*s,a)), 0); P(!*(s=sp(s)), 0); s++); R m; }
+	DO(m->l, P(*s==')', m); P(!(m->a[i]=*s=='('?pq(s,p,a):nMC(*s,a)), 0); P(!*(s=sp(s)), 0); s++); P(*s&!p,0); R m; }
 
 #define FIX(ip)   ((ip)+LIM)%LIM // wraparound
 #define TOS       s->a[s->l-1]
