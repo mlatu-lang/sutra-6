@@ -16,21 +16,24 @@ I simp(S s,I l,M r,A a,I c,M*pa,M*sa) { char fnd[99];
 I teq(M t,M r,I*o) { P(t->c, r->c&&t->c==r->c); P(!o&&t->l!=r->l, 0); I f=0,*no=o?o:&f;
 	P(r->x, teq(t,r->x,no)&&teq(t,r->y,no)); DO(r->l, P(!teq(t->a[o?(*o)++:i],r->a[i],0), 0)); R 1; }
 #define THREADN 4
-I work(V*ag) { LL*se=(LL*)ag; S s=calloc(1,l+pl+1); strcpy(s,ls); M r; A a=nA(); I c; M pa[LIM], sa[LIM];
-	for (LL i=*se; i<se[1]; i++) { if (f) break; prog(i,pl); SRED(pl); if (i%1000001==0) puts(s);
-		if ((r=ps(s,0,a))&&(r=exb(r,&c,a,pa,sa),c>=0)&&teq(rs,r,0)) { PF("%s  |->  ",s); pr(r,0); puts(""); f=1; break; }
-		if (r&&(u=simp(s,l,r,a,c,pa,sa))<l) i+=ipow(csl,l-u-1)-1; rc(a); }
-	fr(a); free(s); }
-LL ses[2*THREADN]; thrd_t t[THREADN];
-I oflen(I len) { PF("length %d:\n",l=len); LL tot=ipow(csl,l), sp=tot/THREADN; !sp&&(sp=1);
-	DO(THREADN, LL*se=ses+2*i; *se=i*sp; se[1]=(i+1)*sp; (i==THREADN-1||se[1]>tot)&&(se[1]=tot); thrd_create(t+i,work,se));
-	DO(THREADN, I b; thrd_join(t[i],&b)); R f; }
+LL ses[2*THREADN]; thrd_t t[THREADN]; mtx_t mtx;
+#define ST ses[2*i]
+#define END ses[2*i+1]
+I gwrk(I id) { P(ses[2*id]<ses[2*id+1], 1); mtx_lock(&mtx);
+	DO(THREADN, P(END-ST>1000, ses[2*id+1]=END, END=ses[2*id]=ST+(END-ST)/2, mtx_unlock(&mtx), 1)); mtx_unlock(&mtx); R 0; }
+I work(V*ag) { LL*se=(LL*)ag; S s=calloc(1,l+pl+1); strcpy(s,ls); M r; A a=nA(); I c, id=(se-ses)/2; M pa[LIM], sa[LIM];
+	while (gwrk(id)) { PF("(id %d) got [%ld %ld)\n",id,se[0],se[1]); for (; se[0]<se[1]; se[0]++) { if (f) goto dn; prog(se[0],pl); SRED(se[0],pl);
+		if ((r=ps(s,0,a))&&(r=exb(r,&c,a,pa,sa),c>=0)&&teq(rs,r,0)) { PF("%s  |->  ",s); pr(r,0); puts(""); f=1; goto dn; }
+		if (r&&(u=simp(s,l,r,a,c,pa,sa))<l) se[0]+=ipow(csl,l-u-1)-1; rc(a); } }
+	dn: fr(a); free(s); }
+I oflen(I len) { PF("length %d:\n",l=len); DO(2*THREADN,ses[i]=0); ses[1]=ipow(csl,l);
+	DO(THREADN, thrd_create(t+i,work,ses+2*i)); DO(THREADN, I b; thrd_join(t[i],&b)); R f; }
 S help="usage: ./find <before> <after> <characters>?\n"
 	"examples: ./find '(B)(A)' '(B)(B)A'           # full search \n"
 	"          ./find '(B)(A)' '(B)(B)A' '+-<>,~'  # search paren-less";
-I findh(V*as) { S*args=(S*)as; S ls_=*args, rs_=args[1], cs_=args[2];
-	csl=strlen(cs=cs_); pl=strlen(ls=ls_); A a=nA(); rs=ps(ls,0,a); P(!rs, fr(a), puts("doesn't parse"));
-	greq(rs_); rs=ps(rs_,0,a); P(!rs, fr(a), puts("doesn't parse")); f=0; DO(99, P(oflen(i), fr(a), 0)); fr(a); R 0; }
+I findh(V*as) { S*args=(S*)as; S ls_=*args, rs_=args[1], cs_=args[2]; csl=strlen(cs=cs_); pl=strlen(ls=ls_); A a=nA();
+	P(!ps(ls,0,a), fr(a), puts("doesn't parse")); greq(rs_); rs=ps(rs_,0,a); P(!rs, fr(a), puts("doesn't parse"));
+	mtx_init(&mtx,mtx_plain); f=0; DO(99, if (oflen(i)) break); mtx_destroy(&mtx); fr(a); R 0; }
 I find(S ls_,S rs_,S cs_,I td) { char ls[99], rs[99], cs[99]; strcpy(ls,ls_); strcpy(rs,rs_); strcpy(cs,cs_);
 	S a[]={ls,rs,cs}; P(!td, findh(a)); thrd_t t; thrd_create(&t,findh,a); thrd_detach(t); }
 I main(I argc,S argv[]) { P(argc!=3&&argc!=4,puts(help)); R find(argv[1],argv[2],argc==4?argv[3]:cs,0); }
